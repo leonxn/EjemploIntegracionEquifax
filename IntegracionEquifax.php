@@ -82,6 +82,34 @@
             return $array;
         }
 
+
+        // FUNCION SI QUIERO OBTENER EL RESULTADO COMO STRING
+        private function formatXmlResponseForDisplay($xmlContent) {
+            $xml = new \SimpleXMLElement($xmlContent);
+            $namespaces = $xml->getNamespaces(true);  // Obtener todos los namespaces
+            $soapNamespace = $namespaces['soap'] ?? 'http://schemas.xmlsoap.org/soap/envelope/';
+            $body = $xml->children($soapNamespace)->Body; // Accede al cuerpo del SOAP
+        
+            // Si tu XML utiliza otro namespace para los elementos internos, necesitas especificarlo aquí
+            $responseNamespace = $body->getNamespaces(true);
+            $yourNamespace = $responseNamespace['ns4'] ?? 'http://equifax.com/WebService/types'; // Cambiar 'ns4' según tu XML
+            $response = $body->children($yourNamespace);
+        
+            return "<pre>" . $this->formatXmlNode($response) . "</pre>";
+        }
+        
+        private function formatXmlNode(\SimpleXMLElement $element, $indent = '') {
+            $output = "";
+            foreach ($element->children() as $child) {
+                if ($child->children()->count() > 0) {
+                    $output .= $indent . $child->getName() . ":\n";
+                    $output .= $this->formatXmlNode($child, $indent . '    ');
+                } else {
+                    $output .= $indent . $child->getName() . ": " . htmlentities((string) $child) . "\n";
+                }
+            }
+            return $output;
+        }
 }
 
      
